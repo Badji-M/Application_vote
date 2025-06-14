@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administration</title>
+
+  <!-- Styles et icônes -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style1.css') }}" />
+</head>
+<body>
+
+<!-- Barre latérale -->
+<nav class="sidebar" id="sidebar">
+  <ul>
+    <li><a href="{{ url_for('accueil') }}"><i class="fas fa-home"></i> Accueil</a></li>
+    <li><a href="{{ url_for('presidentielle') }}"><i class="fas fa-vote-yea"></i> Élection présidentielle</a></li>
+    <li><a href="{{ url_for('club') }}"><i class="fas fa-users"></i> Élection des clubs</a></li>
+    <li><a href="{{ url_for('admin') }}"><i class="fas fa-cogs"></i> Administration</a></li>
+  </ul>
+</nav>
+
+<!-- Contenu principal -->
+<div class="main-content" id="main">
+  <header class="topbar d-flex justify-content-between align-items-center px-3 py-2 bg-light border-bottom">
+    <div class="topbar-left d-flex align-items-center">
+      <span class="menu-btn me-3" onclick="toggleSidebar()">☰</span>
+      <span class="logo fw-bold">Admin | Plateforme de Vote</span>
+    </div>
+    <div class="topbar-right">
+      <a href="{{ url_for('accueil') }}" class="btn btn-outline-secondary me-2">Accueil</a>
+      <a href="{{ url_for('logout') }}" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+    </div>
+  </header>
+
+  <section class="contenu container mt-4">
+    <h1>Importation des candidats</h1>
+
+    <!-- Affichage des messages flash avec catégories -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Formulaire d'importation -->
+    <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" class="mt-3">
+      <div class="mb-3">
+        <label for="fichier" class="form-label">Sélectionner un fichier Excel (.xlsx)</label>
+        <input type="file" name="fichier" class="form-control" id="fichier" accept=".xlsx" required>
+      </div>
+      <button type="submit" class="btn btn-primary" id="importBtn" disabled>Importer</button>
+    </form>
+
+    <!-- NOUVELLE SECTION : Aperçu des données importées -->
+    <div class="mt-5">
+      <h3>Aperçu des données importées</h3>
+
+      {% if sheet_names %}
+        <p><strong>Feuilles trouvées dans le fichier :</strong></p>
+        <ul>
+          {% for feuille in sheet_names %}
+            <li>{{ feuille }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p><em>Aucun fichier importé pour le moment.</em></p>
+      {% endif %}
+
+      <p><strong>Nombre de feuilles importées :</strong> {{ nombre_feuilles or 0 }}</p>
+
+      {% if bureau_preview %}
+        <h4>Feuille Bureau (extrait)</h4>
+        <div class="table-responsive">
+          {{ bureau_preview | safe }}
+        </div>
+      {% else %}
+        <p><em>Aucune donnée Bureau chargée.</em></p>
+      {% endif %}
+
+      {% if clubs_preview %}
+        <h4>Feuille Clubs (extrait)</h4>
+        <div class="table-responsive">
+          {{ clubs_preview | safe }}
+        </div>
+      {% else %}
+        <p><em>Aucune donnée Clubs chargée.</em></p>
+      {% endif %}
+
+      {% if votants_preview %}
+        <h4>Feuille Votants (extrait)</h4>
+        <div class="table-responsive">
+          {{ votants_preview | safe }}
+        </div>
+      {% else %}
+        <p><em>Aucune donnée Votants chargée.</em></p>
+      {% endif %}
+    </div>
+
+    <!-- Bouton retour à l'accueil -->
+    <div class="mt-4">
+      <a href="{{ url_for('accueil') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Retour à l'accueil
+      </a>
+    </div>
+  </section>
+</div>
+
+<!-- Script pour basculer la sidebar -->
+<script>
+  function toggleSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    const main = document.getElementById("main");
+    sidebar.classList.toggle("open");
+    main.classList.toggle("shifted");
+  }
+
+  // Activer le bouton "Importer" seulement si un fichier est sélectionné
+  document.addEventListener("DOMContentLoaded", () => {
+    const fileInput = document.getElementById('fichier');
+    const importBtn = document.getElementById("importBtn");
+
+    fileInput.addEventListener("change", function () {
+      importBtn.disabled = !this.files.length;
+    });
+  });
+</script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,238 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Top bar */
+.topbar {
+  background: linear-gradient(180deg, #2c3e50, #34495e);  padding-top: 60px;
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  width: 100%;
+  z-index: 10;
+}
+
+/* Nouveau conteneur pour menu + logo */
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Espace entre ☰ et le texte */
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.menu-btn {
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Sidebar */
+
+.sidebar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 250px;
+  height: 100%;
+  background: linear-gradient(180deg, #2c3e50, #34495e);  padding-top: 60px;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 10;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+}
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+/* Contenu principal à déplacer */
+.main-content {
+  transition: margin-left 0.3s ease;
+}
+
+.main-content.shifted {
+  margin-left: 250px;
+}
+
+.sidebar ul li {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar ul li a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  padding: 15px 20px;
+  text-decoration: none;
+  font-size: 16px;
+  transition: background 0.3s, padding-left 0.3s;
+}
+
+.sidebar ul li a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding-left: 30px;
+}
+
+/* *** AJOUT pour icônes Font Awesome *** */
+.sidebar ul li a i {
+  width: 20px;       /* largeur fixe pour alignement */
+  text-align: center;
+  font-size: 18px;   /* taille icône */
+  color: #fff;
+}
+
+
+/* Hero section */
+.hero {
+  height: 100vh;
+  background: url('../images/ensae.jpg') center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  padding-top: 60px;
+  text-align: center;
+}
+
+.hero-content h1 {
+  font-size: 48px;
+}
+
+.hero-content p {
+  font-size: 20px;
+  margin-top: 10px;
+}
+
+/* Blocs après scroll */
+.contenu {
+  padding: 60px 20px;
+  background-color: #f4f4f4;
+}
+
+.bloc {
+  margin-bottom: 40px;
+  padding: 30px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+
+/* *** Zones pour les clubs *** */
+
+.certificates-section {
+  padding: 5rem 2rem;
+  background-color: #f8f9fa;
+  text-align: center;
+}
+
+.section-header h2 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.section-header p {
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 3rem;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  justify-items: center;
+}
+
+.card {
+  width: 250px;
+  height: 250px;
+  background-color: #fff;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: center;
+}
+
+.card a {
+  color: inherit;
+  text-decoration: none;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card img {
+  width: 100%;
+  height: 65%;
+  object-fit: cover;
+}
+
+.card h4 {
+  padding: 1rem;
+  font-size: 1rem;
+  color: #222;
+  background-color: #f0f0f0;
+  margin: 0;
+  flex-grow: 1;
+}
+
+.card:hover {
+  transform: scale(1.03);
+}
+
+
+
+/* Part Footer; */
+.footer {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+.footer h5 {
+  font-weight: bold;
+}
+
+.footer a {
+  text-decoration: none;
+  color: #ccc;
+}
+
+.footer a:hover {
+  color: #fff;
+}
+
+.footer-social i {
+  font-size: 1.2rem;
+}
+
+.footer-bottom {
+  font-size: 0.9rem;
+  color: #aaa;
+}
