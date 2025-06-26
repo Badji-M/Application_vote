@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Authentification par Token</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap & FontAwesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+body {
+  background: url("{{ url_for('static', filename='images/vote.jpg') }}") no-repeat center center fixed;
+  background-size: cover;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+    .typing-container {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 30px;
+      text-align: center;
+      min-height: 50px;
+    }
+
+    .login-box {
+      background-color: #fff;
+      color: #333;
+      padding: 2.5rem;
+      border-radius: 1rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .login-box h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #007bff;
+    }
+
+    .btn-primary {
+      background-color: #007bff;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background-color: #0056b3;
+    }
+
+    .btn-retour {
+      background-color: #dc3545;
+      border: none;
+    }
+
+    .btn-retour:hover {
+      background-color: #bb2d3b;
+    }
+
+    footer {
+      position: absolute;
+      bottom: 10px;
+      color: #ccc;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Texte animé -->
+  <div class="typing-container" id="typing-text"></div>
+
+  <!-- Formulaire de saisie -->
+  <div class="login-box">
+    <h2><i class="fas fa-key"></i> Identification du Votant</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('saisir_token') }}">
+      <div class="mb-3">
+        <label for="token" class="form-label">Veuillez entrer votre token de vote (identifiant) :</label>
+        <input type="text" name="token" id="token" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Valider</button>
+    </form>
+
+    <a href="{{ url_for('accueil') }}" class="btn btn-retour mt-3 w-100">
+      <i class="fas fa-home me-1"></i> Retour à l'accueil
+    </a>
+  </div>
+
+  <!-- Copyright -->
+  <footer>&copy; ENSAE, 2025 - Plateforme de Vote</footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const text = "Identification du votant - Enter votre Identifiant";
+    const typingText = document.getElementById("typing-text");
+    let index = 0;
+
+    function typeWriter() {
+      if (index < text.length) {
+        typingText.textContent += text.charAt(index);
+        index++;
+        setTimeout(typeWriter, 70);
+      }
+    }
+
+    window.onload = typeWriter;
+  </script>
+</body>
+</html>

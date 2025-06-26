@@ -19,13 +19,14 @@
 <!-- Menu latéral indépendant -->
 <nav class="sidebar" id="sidebar">
   <ul>
+    <li class="sidebar-logo">
+      <img src="{{ url_for('static', filename='images/logo_ensae.png') }}" alt="Logo ENSAE"></li>
     <!-- Utilisation de url_for pour générer les URLs des routes Flask -->
     <li><a href="{{ url_for('accueil') }}"><i class="fas fa-home"></i> Accueil</a></li>
-    <li><a href="#"><i class="fas fa-vote-yea"></i> Élection présidentielle</a></li>
-    <li><a href="{{ url_for('club') }}"><i class="fas fa-users"></i> Élection des clubs</a></li>
-    <li><a href="{{ url_for('admin') }}"><i class="fas fa-cogs"></i> Administration</a></li>
-    <li><a href="#"><i class="fas fa-chart-bar"></i> Résultats</a></li>
-    <li><a href="#"><i class="fas fa-info-circle"></i> À propos</a></li>
+    <li><a href="{{ url_for('saisir_token') }}"><i class="fas fa-users"></i> Élection</a></li>
+    <li><a href="{{ url_for('login_admin') }}"><i class="fas fa-cogs"></i> Administration</a></li>
+    <li><a href="{{ url_for('resultats') }}"><i class="fas fa-chart-bar"></i> Résultats</a></li>
+    <li><a href="{{ url_for('apropos') }}"><i class="fas fa-info-circle"></i> A propos</a></li> 
   </ul>
 </nav>
 
@@ -41,15 +42,15 @@
   </header>
 
   <!-- Hero -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1>Bienvenue sur la plateforme</h1>
-      <p>Votez facilement et en toute sécurité</p>
-      
-      <!-- Exemple d'image dans la page -->
-      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo de la plateforme" style="max-width:200px; margin-top:20px;">
+<section class="hero">
+  <div class="hero-content">
+    <!-- Texte animé -->
+    <div class="typewriter">
+      <h1>Bienvenue sur la plateforme de vote -ENSAE-</h1>
     </div>
-  </section>
+    <p>Votez facilement et en toute sécurité</p>
+  </div>
+</section>
 
   <!-- Blocs -->
   <section class="contenu">

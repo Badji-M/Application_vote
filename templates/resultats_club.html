@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Résultats des votes des clubs</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background-color: #f8f9fa;;
+    }
+    .stat-box {
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 20px;
+      background-color: white;
+      margin-bottom: 20px;
+    }
+    .stat-title {
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    .stat-value {
+      font-size: 1.8rem;
+      color: #007bff;
+    }
+    
+  
+    .card {
+      border-radius: 15px;
+      transition: 0.3s;
+    }
+    .card:hover {
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    .chart-container {
+      position: relative;
+      height: 300px;
+    }
+
+    .typewriter {
+      display: inline-block;
+      overflow: hidden;
+      border-right: 2px solid black;
+      white-space: nowrap;
+      animation: typing 3s steps(40, end), blink-caret 0.75s step-end 10;
+      animation-fill-mode: forwards;
+    }
+
+
+    /* Centre le texte dans son parent */
+    .text-center .typewriter {
+      text-align: center;
+    }
+
+    @keyframes typing {
+      from { width: 0; }
+      to   { width: 100%; }
+
+    }
+    
+    /* Clignotement du curseur */
+    @keyframes blink-caret {
+      from, to { border-color: transparent }
+      50% { border-color: black }
+    }
+    
+</style>
+
+</head>
+<body class="p-4">
+
+  <div class="container">
+
+    <div class="text-center">
+      <div class="typewriter">
+        <h1 class="text-primary">Ecran de suivi des votes</h1>
+      </div>
+    </div>
+
+    
+<div class="d-flex justify-content-between align-items-center mt-4">
+
+  <!-- Bouton PDF (visible pour tous) -->
+  <form action="{{ url_for('generer_pdf') }}" method="post">
+    <button type="submit" class="btn btn-danger">
+      <i class="fas fa-file-pdf"></i> Télécharger le rapport PDF
+    </button>
+  </form>
+
+  <!-- Bouton Accueil (vert et à droite) -->
+  <a href="{{ url_for('accueil') }}" class="btn btn-success">
+    <i class="fas fa-home"></i> Accueil
+  </a>
+
+</div>
+
+
+
+    {% if resultats.empty %}
+      <div class="alert alert-warning text-center">Aucun vote enregistré pour le moment.</div>
+    {% else %}
+
+    <div class="row text-center mb-4">
+      <div class="col-md-3 stat-box">
+        <div class="stat-title">Votants inscrits</div>
+        <div class="stat-value">{{ total_votants }}</div>
+      </div>
+      <div class="col-md-3 stat-box">
+        <div class="stat-title">Ont voté</div>
+        <div class="stat-value">{{ nb_votants_uniques }}</div>
+      </div>
+      <div class="col-md-3 stat-box">
+        <div class="stat-title">Votes totalisés</div>
+        <div class="stat-value">{{ total_votes }}</div>
+      </div>
+      <div class="col-md-3 stat-box">
+        <div class="stat-title">Taux de participation</div>
+        <div class="stat-value">{{ taux_participation }}%</div>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped align-middle text-center">
+        <thead class="table-dark">
+          <tr>
+            <th>Poste</th>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Nombre de votes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for _, row in resultats.iterrows() %}
+          <tr>
+            <td>{{ row['Titre_Poste'] }}</td>
+            <td>{{ row['Nom_Candidat'] }}</td>
+            <td>{{ row['Prenom_Candidat'] }}</td>
+            <td><strong>{{ row['Nombre_de_votes'] }}</strong></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% endif %}
+
+    <div class="mt-4 text-center">
+      <a href="{{ url_for('club') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Retour à l’élection
+      </a>
+    </div>
+
+    {% if not resultats.empty %}
+        <h2 class="mt-5 mb-4 text-center text-secondary">Visualisation des résultats par poste</h2>
+    <div class="row g-4" id="charts-container">
+      {% for poste in resultats['Titre_Poste'].unique() %}
+        <div class="col-md-6">
+          <div class="card shadow-sm h-100">
+            <div class="card-body">
+              <h5 class="card-title text-center text-primary">{{ poste }}</h5>
+              <canvas id="chart_{{ loop.index }}"></canvas>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+
+<!-- Desagregation par classe (taux de participation) -->
+  {% if taux_par_classe %}
+<h2 class="mt-5 mb-4 text-center text-secondary">Taux de participation par classe</h2>
+
+<!-- Tableau -->
+<div class="table-responsive mb-4">
+  <table class="table table-bordered table-striped text-center">
+    <thead class="table-dark">
+      <tr>
+        <th>Classe</th>
+        <th>Inscrits</th>
+        <th>Ont voté</th>
+        <th>Taux de participation (%)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ligne in taux_par_classe %}
+        <tr>
+          <td>{{ ligne.Classe }}</td>
+          <td>{{ ligne.Inscrits }}</td>
+          <td>{{ ligne.Ont_voté }}</td>
+          <td>{{ ligne.Taux_participation }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<h3 class="mt-5 mb-4 text-center text-secondary">Graphique : Participation aux votes par classe</h3>
+<!-- Graphe -->
+<div class="card mb-5 p-3 shadow-sm">
+  <canvas id="chart_taux_classe"></canvas>
+</div>
+{% endif %}
+
+
+  <!-- JS -->
+  <script>
+const colors = [
+  '#007bff', '#28a745', '#ffc107', '#dc3545', '#6f42c1',
+  '#20c997', '#fd7e14', '#17a2b8', '#6610f2', '#e83e8c'
+];
+
+const resultsData = {{ resultats.to_dict(orient='records') | tojson }};
+const grouped = {};
+
+resultsData.forEach(r => {
+  if (!grouped[r.Titre_Poste]) grouped[r.Titre_Poste] = [];
+  grouped[r.Titre_Poste].push(r);
+});
+
+let index = 1;
+for (const [poste, candidats] of Object.entries(grouped)) {
+  const ctx = document.getElementById(`chart_${index}`).getContext("2d");
+
+  const labels = candidats.map(c => `${c.Prenom_Candidat} ${c.Nom_Candidat}`);
+  const votes = candidats.map(c => c.Nombre_de_votes);
+  const bgColors = candidats.map((_, i) => colors[i % colors.length]);
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: `Votes`,
+        data: votes,
+        backgroundColor: bgColors,
+        borderRadius: 5
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: context => `Votes : ${context.parsed.y}`
+          }
+        },
+        title: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 }
+        }
+      }
+    }
+  });
+
+  index++;
+}
+</script>
+
+
+
+<!-- Gaphe par classe (taux de participation) -->
+<script>
+  const dataParClasse = {{ taux_par_classe | tojson }};
+  const ctx = document.getElementById('chart_taux_classe');
+
+  if (ctx && dataParClasse.length > 0) {
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: dataParClasse.map(d => d.Classe),
+        datasets: [{
+          label: 'Taux de participation (%)',
+          data: dataParClasse.map(d => d.Taux_participation),
+          backgroundColor: '#0d6efd',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            title: {
+              display: true,
+              text: 'Pourcentage (%)'
+            }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: context => context.parsed.y + '%'
+            }
+          },
+          legend: { display: false },
+          title: {
+            display: false
+          }
+        }
+      }
+    });
+  }
+</script>
+
+
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</body>
+</html>

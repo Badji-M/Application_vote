@@ -2,12 +2,14 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Administration</title>
 
-  <!-- Styles et icônes -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style1.css') }}" />
 </head>
 <body>
@@ -16,14 +18,15 @@
 <nav class="sidebar" id="sidebar">
   <ul>
     <li><a href="{{ url_for('accueil') }}"><i class="fas fa-home"></i> Accueil</a></li>
-    <li><a href="{{ url_for('presidentielle') }}"><i class="fas fa-vote-yea"></i> Élection présidentielle</a></li>
-    <li><a href="{{ url_for('club') }}"><i class="fas fa-users"></i> Élection des clubs</a></li>
+    <li><a href="{{ url_for('club') }}"><i class="fas fa-users"></i> Élection</a></li>
     <li><a href="{{ url_for('admin') }}"><i class="fas fa-cogs"></i> Administration</a></li>
+    <li><a href="{{ url_for('resultats') }}"><i class="fas fa-chart-bar"></i> Résultats</a></li>
   </ul>
 </nav>
 
 <!-- Contenu principal -->
 <div class="main-content" id="main">
+
   <header class="topbar d-flex justify-content-between align-items-center px-3 py-2 bg-light border-bottom">
     <div class="topbar-left d-flex align-items-center">
       <span class="menu-btn me-3" onclick="toggleSidebar()">☰</span>
@@ -36,9 +39,10 @@
   </header>
 
   <section class="contenu container mt-4">
-    <h1>Importation des candidats</h1>
+    <h1 id="typewriter-text" class="typewriter-title"></h1>
 
-    <!-- Affichage des messages flash avec catégories -->
+
+    <!-- Messages flash -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -50,16 +54,37 @@
       {% endif %}
     {% endwith %}
 
-    <!-- Formulaire d'importation -->
+    <!-- Formulaire import -->
     <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" class="mt-3">
       <div class="mb-3">
         <label for="fichier" class="form-label">Sélectionner un fichier Excel (.xlsx)</label>
         <input type="file" name="fichier" class="form-control" id="fichier" accept=".xlsx" required>
       </div>
-      <button type="submit" class="btn btn-primary" id="importBtn" disabled>Importer</button>
+      <div class="d-flex gap-3 flex-wrap">
+        <button type="submit" class="btn btn-primary" id="importBtn" disabled>Importer</button>
+        <a href="{{ url_for('telecharger_tokens') }}" class="btn btn-outline-primary">📥 Télécharger la liste des tokens</a>
+      </div>
     </form>
 
-    <!-- NOUVELLE SECTION : Aperçu des données importées -->
+     <!-- Impoter le fichier ziper des photos des candidats -->
+    <form method="post" action="{{ url_for('upload_photos') }}" enctype="multipart/form-data" class="mb-3">
+      <label for="photos_zip" class="form-label">Uploader un ZIP contenant les photos des candidats</label>
+      <input type="file" class="form-control" id="photos_zip" name="photos_zip" accept=".zip" required>
+      <button type="submit" class="btn btn-primary mt-2">Uploader les photos</button>
+    </form>
+
+     <!-- Impoter le fichier ziper des programmes des candidats -->
+    <form method="post" action="{{ url_for('upload_programmes_zip') }}" enctype="multipart/form-data" class="mb-4">
+      <label for="fichier_zip" class="form-label">Uploader un fichier ZIP contenant les programmes des candidats :</label>
+      <input type="file" name="fichier_zip" id="fichier_zip" accept=".zip" class="form-control" required>
+      <button type="submit" class="btn btn-primary mt-2">Uploader ZIP Programmes</button>
+    </form>
+
+
+
+
+
+    <!-- Aperçu des données importées -->
     <div class="mt-5">
       <h3>Aperçu des données importées</h3>
 
@@ -70,41 +95,38 @@
             <li>{{ feuille }}</li>
           {% endfor %}
         </ul>
+        <p><strong>Nombre de feuilles importées :</strong> {{ sheet_names|length }}</p>
       {% else %}
         <p><em>Aucun fichier importé pour le moment.</em></p>
       {% endif %}
 
-      <p><strong>Nombre de feuilles importées :</strong> {{ nombre_feuilles or 0 }}</p>
+      {% if sheet_names and (candidats_preview or votants_preview) %}
+        <button class="btn btn-success mb-3" type="button"
+          data-bs-toggle="collapse" data-bs-target="#tableauxApercu"
+          aria-expanded="false" aria-controls="tableauxApercu"
+          {% if not import_effectue %}disabled{% endif %}>
+          Aperçu des tableaux
+        </button>
 
-      {% if bureau_preview %}
-        <h4>Feuille Bureau (extrait)</h4>
-        <div class="table-responsive">
-          {{ bureau_preview | safe }}
-        </div>
-      {% else %}
-        <p><em>Aucune donnée Bureau chargée.</em></p>
-      {% endif %}
+        <div class="collapse" id="tableauxApercu">
+          {% if candidats_preview %}
+            <h4 class="mt-3">Feuille Candidats (extrait)</h4>
+            <div class="table-responsive">
+              {{ candidats_preview | safe }}
+            </div>
+          {% endif %}
 
-      {% if clubs_preview %}
-        <h4>Feuille Clubs (extrait)</h4>
-        <div class="table-responsive">
-          {{ clubs_preview | safe }}
+          {% if votants_preview %}
+            <h4 class="mt-4">Feuille Votants (extrait)</h4>
+            <div class="table-responsive">
+              {{ votants_preview | safe }}
+            </div>
+          {% endif %}
         </div>
-      {% else %}
-        <p><em>Aucune donnée Clubs chargée.</em></p>
-      {% endif %}
-
-      {% if votants_preview %}
-        <h4>Feuille Votants (extrait)</h4>
-        <div class="table-responsive">
-          {{ votants_preview | safe }}
-        </div>
-      {% else %}
-        <p><em>Aucune donnée Votants chargée.</em></p>
       {% endif %}
     </div>
 
-    <!-- Bouton retour à l'accueil -->
+    <!-- Bouton retour -->
     <div class="mt-4">
       <a href="{{ url_for('accueil') }}" class="btn btn-secondary">
         <i class="fas fa-arrow-left"></i> Retour à l'accueil
@@ -113,7 +135,25 @@
   </section>
 </div>
 
-<!-- Script pour basculer la sidebar -->
+<script>
+  const text = "Préparation de l'application de vote";
+  const typewriter = document.getElementById("typewriter-text");
+  let i = 0;
+
+  function typeLetter() {
+    if (i < text.length) {
+      typewriter.textContent += text.charAt(i);
+      i++;
+      setTimeout(typeLetter, 70); // vitesse de frappe
+    } else {
+      typewriter.style.borderRight = "none"; // supprime le curseur à la fin
+    }
+  }
+
+  window.onload = typeLetter;
+</script>
+
+
 <script>
   function toggleSidebar() {
     const sidebar = document.getElementById("sidebar");
@@ -122,7 +162,6 @@
     main.classList.toggle("shifted");
   }
 
-  // Activer le bouton "Importer" seulement si un fichier est sélectionné
   document.addEventListener("DOMContentLoaded", () => {
     const fileInput = document.getElementById('fichier');
     const importBtn = document.getElementById("importBtn");
@@ -133,7 +172,6 @@
   });
 </script>
 
-<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
